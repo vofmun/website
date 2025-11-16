@@ -103,7 +103,7 @@ export function RulesSection() {
                     committee-specific guidelines, and conference protocols.
                   </p>
                 </div>
-                <Button variant="secondary" size="lg" className="bg-white text-[#B22222] hover:bg-gray-100">
+                <Button variant="secondary" size="lg" onClick={() => window.open("/pdfs/T&Cs.pdf", "_blank")} className="bg-white text-[#B22222] hover:bg-gray-100">
                   <Download className="h-5 w-5 mr-2" />
                   Download Full Rules PDF
                 </Button>
