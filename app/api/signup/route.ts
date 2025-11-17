@@ -156,7 +156,11 @@ export async function POST(request: NextRequest) {
       ? body.referralCodes
       : Array.isArray(body.delegateData?.referralCodes)
         ? body.delegateData.referralCodes
-        : []
+        : Array.isArray(body.chairData?.referralCodes)
+          ? body.chairData.referralCodes
+          : Array.isArray(body.adminData?.referralCodes)
+            ? body.adminData.referralCodes
+            : []
 
     const sanitizedReferralCodes = incomingReferralCodes
       .map((code: unknown) => (typeof code === 'string' ? normalizeReferralCode(code) : ''))
