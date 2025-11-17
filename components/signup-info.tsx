@@ -54,7 +54,7 @@ export function SignupInfo() {
             <span className="text-gray-800">Venue:</span>
             <div className="text-right space-y-1">
               <span className="text-gray-600 block">
-                UK College of Business & Computing - Academic City, Dubai
+                UKCBC - Academic City, Dubai
               </span>
               <a
                 href="https://maps.app.goo.gl/jx4SsR7r58oauhedA"
