@@ -49,7 +49,6 @@ type DelegateFormState = {
   committee1: string
   committee2: string
   committee3: string
-  referralCodes: string[]
 }
 
 type ChairExperience = {
@@ -121,7 +120,6 @@ const createInitialDelegateData = (): DelegateFormState => ({
   committee1: "",
   committee2: "",
   committee3: "",
-  referralCodes: [""],
 })
 
 const createInitialChairData = (): ChairFormState => ({
@@ -174,6 +172,8 @@ export function SignupFormNew() {
   const [chairData, setChairData] = useState<ChairFormState>(createInitialChairData)
 
   const [adminData, setAdminData] = useState<AdminFormState>(createInitialAdminData)
+
+  const [referralCodes, setReferralCodes] = useState<string[]>([""])
 
   const [referralFeedback, setReferralFeedback] = useState<Record<number, ReferralFeedbackEntry>>({})
 
@@ -278,6 +278,7 @@ export function SignupFormNew() {
     setDelegateData(createInitialDelegateData())
     setChairData(createInitialChairData())
     setAdminData(createInitialAdminData())
+    setReferralCodes([""])
     setSelectedRole(null)
     setHasPaid("")
     setPaymentFullName("")
@@ -321,26 +322,23 @@ export function SignupFormNew() {
   }
 
   const addReferralCode = () => {
-    setDelegateData((prev) => ({
-      ...prev,
-      referralCodes: [...prev.referralCodes, ""],
-    }))
+    setReferralCodes((prev) => [...prev, ""])
   }
 
   const updateReferralCode = (index: number, value: string) => {
     const normalizedValue = value.toUpperCase()
-    setDelegateData((prev) => {
-      const nextCodes = [...prev.referralCodes]
+    setReferralCodes((prev) => {
+      const nextCodes = [...prev]
       nextCodes[index] = normalizedValue
-      return { ...prev, referralCodes: nextCodes }
+      return nextCodes
     })
 
     clearReferralFeedbackForIndex(index)
   }
 
   const removeReferralCode = (index: number) => {
-    setDelegateData((prev) => {
-      const updatedCodes = prev.referralCodes.filter((_, i) => i !== index)
+    setReferralCodes((prev) => {
+      const updatedCodes = prev.filter((_, i) => i !== index)
       setReferralFeedback((current) => {
         if (Object.keys(current).length === 0) return current
         const next: Record<number, ReferralFeedbackEntry> = {}
@@ -352,15 +350,12 @@ export function SignupFormNew() {
         })
         return next
       })
-      return {
-        ...prev,
-        referralCodes: updatedCodes,
-      }
+      return updatedCodes
     })
   }
 
   const handleReferralBlur = (index: number) => {
-    const rawCode = delegateData.referralCodes[index] ?? ""
+    const rawCode = referralCodes[index] ?? ""
     if (!rawCode.trim()) {
       clearReferralFeedbackForIndex(index)
       return
@@ -421,6 +416,71 @@ export function SignupFormNew() {
       },
     }))
   }
+
+  const renderReferralCodeSection = () => (
+    <div className="space-y-3 sm:space-4">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h4 className="text-md sm:text-lg font-semibold text-gray-700">Referral Codes (Optional)</h4>
+          <p className="text-sm text-muted-foreground">
+            Enter referral codes shared with you by any secretariat members. Add multiple codes if you have more than one.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addReferralCode}
+          className="flex items-center gap-2"
+          data-testid="button-add-referral-code"
+        >
+          <Plus className="h-4 w-4" />
+          Add Code
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {referralCodes.map((code, index) => {
+          const feedback = referralFeedback[index]
+          const feedbackColor =
+            feedback?.type === "error"
+              ? "text-red-600"
+              : feedback?.type === "success"
+                ? "text-green-600"
+                : "text-amber-600"
+          return (
+            <div key={index} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+              <div className="flex-1">
+                <Input
+                  value={code}
+                  onChange={(e) => updateReferralCode(index, e.target.value)}
+                  onBlur={() => handleReferralBlur(index)}
+                  placeholder="Enter referral code"
+                  className="flex-1"
+                  data-testid={`input-referral-code-${index}`}
+                />
+                {feedback && (
+                  <p className={`mt-1 text-xs ${feedbackColor}`}>{feedback.message}</p>
+                )}
+              </div>
+              {referralCodes.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => removeReferralCode(index)}
+                  className="h-9 w-9 text-red-500 border-red-200 hover:bg-red-50"
+                  aria-label={`Remove referral code ${index + 1}`}
+                  data-testid={`button-remove-referral-code-${index}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -592,15 +652,11 @@ export function SignupFormNew() {
         paymentProofDataUrl = await fileToDataURL(paymentProofFile)
       }
 
-      const sanitizedDelegateData =
-        selectedRole === "delegate"
-          ? {
-              ...delegateData,
-              referralCodes: delegateData.referralCodes
-                .map((code) => code.trim())
-                .filter((code) => code.length > 0),
-            }
-          : null
+      const sanitizedDelegateData = selectedRole === "delegate" ? { ...delegateData } : null
+
+      const normalizedReferralCodes = referralCodes.map((code) => normalizeReferralCode(code.trim()))
+
+      const sanitizedReferralCodes = normalizedReferralCodes.filter((code) => code.length > 0)
 
       const submitData = {
         formData,
@@ -608,7 +664,7 @@ export function SignupFormNew() {
         delegateData: sanitizedDelegateData,
         chairData: selectedRole === "chair" ? chairData : null,
         adminData: selectedRole === "admin" ? adminData : null,
-        referralCodes: sanitizedDelegateData?.referralCodes ?? [],
+        referralCodes: sanitizedReferralCodes,
         paymentStatus: hasPaid,
         paymentConfirmation:
           hasPaid === "yes" && paymentProofDataUrl && selectedRole
@@ -664,9 +720,10 @@ export function SignupFormNew() {
 
             setReferralFeedback((prev) => {
               const next = { ...prev }
-              delegateData.referralCodes.forEach((code, index) => {
-                const normalizedCode = normalizeReferralCode(code)
-                const matchingEntry = invalidEntries.find((entry: any) => entry.code === normalizedCode)
+              normalizedReferralCodes.forEach((code, index) => {
+                if (!code) return
+
+                const matchingEntry = invalidEntries.find((entry: any) => entry.code === code)
                 if (!matchingEntry) return
 
                 const hasSuggestions = Array.isArray(matchingEntry.suggestions) && matchingEntry.suggestions.length > 0
@@ -1250,69 +1307,7 @@ export function SignupFormNew() {
                   </div>
                 ))}
               </div>
-
-              <div className="space-y-3 sm:space-4">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <h4 className="text-md sm:text-lg font-semibold text-gray-700">Referral Codes (Optional)</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Enter referral codes shared with you by any secretariat members. Add multiple codes if you have more than one.
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addReferralCode}
-                    className="flex items-center gap-2"
-                    data-testid="button-add-referral-code"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Code
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {delegateData.referralCodes.map((code, index) => {
-                    const feedback = referralFeedback[index]
-                    const feedbackColor =
-                      feedback?.type === "error"
-                        ? "text-red-600"
-                        : feedback?.type === "success"
-                          ? "text-green-600"
-                          : "text-amber-600"
-                    return (
-                      <div key={index} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-                        <div className="flex-1">
-                          <Input
-                            value={code}
-                            onChange={(e) => updateReferralCode(index, e.target.value)}
-                            onBlur={() => handleReferralBlur(index)}
-                            placeholder="Enter referral code"
-                            className="flex-1"
-                            data-testid={`input-referral-code-${index}`}
-                          />
-                          {feedback && (
-                            <p className={`mt-1 text-xs ${feedbackColor}`}>{feedback.message}</p>
-                          )}
-                        </div>
-                        {delegateData.referralCodes.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeReferralCode(index)}
-                            className="h-9 w-9 text-red-500 border-red-200 hover:bg-red-50"
-                            aria-label={`Remove referral code ${index + 1}`}
-                            data-testid={`button-remove-referral-code-${index}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              {renderReferralCodeSection()}
             </div>
           )}
 
@@ -1698,8 +1693,7 @@ export function SignupFormNew() {
                   </div>
                 </div>
               )}
-
-
+              {renderReferralCodeSection()}
             </div>
           )}
 
@@ -1809,6 +1803,8 @@ export function SignupFormNew() {
                   </div>
                 </div>
               </div>
+
+              {renderReferralCodeSection()}
             </div>
           )}
 
