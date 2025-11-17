@@ -1232,7 +1232,7 @@ export function SignupFormNew() {
                               ) && delegateData[key] !== "icj"
                             }
                           >
-                            ICJ - Advanced
+                            ICJ - Special Procedure
                           </SelectItem>
                           <SelectItem
                             value="icrcc"
@@ -1242,7 +1242,7 @@ export function SignupFormNew() {
                               ) && delegateData[key] !== "icrcc"
                             }
                           >
-                            ICRCC - Intermediate
+                            ICRCC - Crisis
                           </SelectItem>
                         </SelectContent>
                       </Select>
