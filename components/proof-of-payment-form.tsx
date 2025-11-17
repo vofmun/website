@@ -467,7 +467,7 @@ export function ProofOfPaymentForm() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
             <p className="text-xs text-gray-500">
-              Need help? Email <a href="mailto:support@vofmun.org" className="underline">support@vofmun.org</a>
+              Need help? Email <a href="mailto:conference@vofmun.org" className="underline">conference@vofmun.org</a>
             </p>
             <Button type="submit" className="vofmun-gradient text-white" disabled={hasPaid !== "yes" || isSubmitting}>
               {isSubmitting ? (
