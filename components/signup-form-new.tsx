@@ -870,7 +870,7 @@ export function SignupFormNew() {
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
               <li>Check your inbox (and spam) for the payment email.</li>
               <li>
-                Need help? Email <a href="mailto:support@vofmun.org" className="underline">support@vofmun.org</a>.
+                Need help? Email <a href="mailto:conference@vofmun.org" className="underline">conference@vofmun.org</a>.
               </li>
             </ul>
           </DialogDescription>
