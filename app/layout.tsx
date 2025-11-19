@@ -34,6 +34,7 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://vofmun.org"),
   title: "VOFMUN - Voices of the Future Model United Nations",
   description:
     "Join VOFMUN - A youth-driven platform bringing together tomorrow's leaders to debate, collaborate, and create solutions for global challenges.",
@@ -46,10 +47,31 @@ export const metadata: Metadata = {
     "Global Issues",
   ],
   authors: [{ name: "VOFMUN Team" }],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "VOFMUN - Voices of the Future Model United Nations",
     description: "Join VOFMUN - A youth-driven platform for tomorrow's leaders",
     type: "website",
+    url: "https://vofmun.org",
+    siteName: "VOFMUN",
+    images: [
+      {
+        url: "https://vofmun.org/logo.svg",
+        width: 1200,
+        height: 630,
+        alt: "VOFMUN logo",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "VOFMUN - Voices of the Future Model United Nations",
+    description:
+      "Youth-driven platform empowering tomorrow's leaders to debate and collaborate on global solutions.",
+    images: ["https://vofmun.org/logo.svg"],
   },
 
   icons: [
@@ -72,9 +94,25 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Voices of the Future Model United Nations (VOFMUN)",
+    url: "https://vofmun.org",
+    logo: "https://vofmun.org/logo.svg",
+    description:
+      "Youth-driven Model United Nations conference fostering diplomacy, collaboration, and leadership.",
+  };
+
   return (
     <html lang="en" className={`${dmSerifDisplay.variable} ${dmSans.variable}`}>
       <body className="font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd),
+          }}
+        />
         <ScrollRestoration />
         {children}
         <Toaster />
